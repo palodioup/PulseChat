@@ -16,15 +16,25 @@ function ProfileHeader() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Check size - if over 1MB, we definitely need to warn/compress
+    if (file.size > 1024 * 1024 * 5) {
+        alert("File is too large! Please choose an image under 5MB.");
+        return;
+    }
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
 
     reader.onloadend = async () => {
       const base64Image = reader.result;
+      
+      // OPTIONAL: You can use a library like 'browser-image-compression' here
+      // But for now, let's just update state and try the timeout fix
       setSelectedImg(base64Image);
       await updateProfile({ profilePic: base64Image });
     };
   };
+
 
   return (
     <div className="p-6 border-b border-slate-700/50">
