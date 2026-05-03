@@ -1,31 +1,44 @@
 import React from 'react'
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import ChatPage from './pages/ChatPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignUpPage from './pages/SignUpPage.jsx'
 import Home from './pages/Home.jsx'
+import PageLoader from './components/PageLoader.jsx'
+import { useEffect } from 'react'
 import { useAuthStore } from './store/useAuthStore.js'
+import { Toaster } from 'react-hot-toast'
+import RequestNotifications from './components/RequestNotifications.jsx'
 
 export default function App() {
-  const { authUser, isLoggedIn, login } = useAuthStore()
+  const {checkAuth, isCheckingAuth, authUser} = useAuthStore()
 
-  console.log("Auth User: ", authUser)
-  console.log("isLoggedIn: ", isLoggedIn)
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
+
+  if (isCheckingAuth) return <PageLoader/>
 
   return (
     <div className="min-h-screen bg-slate-900 relative flex items-center justify-center padding-4 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:24px_34px]" />
       <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
 
-      <div className="relative z-10">
+       {/* 2. Add it here so it listens as soon as the user is authenticated */}
+        {authUser && <RequestNotifications />}
+
+  
         <Routes>
-          <Route path="/" element={<Home/>}/>
-          <Route path="/chatpage" element={<ChatPage/>}/>
-          <Route path="/login" element={<LoginPage/>}/>
-          <Route path="/signup" element={<SignUpPage/>}/>
+          {/* <Route path="/" element={!authUser ? <Home/> : <Navigate to={"/signup"}/>}/> */}
+          <Route path="/" element={authUser ? <ChatPage/> : <Navigate to={"/login"}/>}/>
+          <Route path="/login" element={ !authUser ? <LoginPage/> : <Navigate to={"/"}/>}/>
+          <Route path="/signup" element={ !authUser ? <SignUpPage/> : <Navigate to={"/"}/>}/>
+          <Route path="/home" element={<Home/>}/>
         </Routes>
-      </div>
+      
+
+      <Toaster/>
     </div>
   )
 }
